@@ -4,6 +4,7 @@ import base64
 import urllib
 import json
 import os
+import re
 
 # load environment variables
 load_dotenv()
@@ -88,40 +89,52 @@ def get_albums_by_artist(token, artist_id):
     else: 
         return json_result
 
+def sanitize_filename(filename):
+    # remove special characters from filename
+    sanitized_filename = re.sub(r"[^\w\s.-]", "_", filename)
+    return sanitized_filename
+
 token = get_token()
-result = search_for_artist(token, "Polyphia")
-artist_id = result["id"]
-songs = get_songs_by_artist(token, artist_id)
-albums = get_albums_by_artist(token, artist_id)
+user_artist = input("Enter an artist: ")
+result = search_for_artist(token, user_artist)
 
-os.makedirs("images/songs/", exist_ok=True)
-os.makedirs("images/albums/", exist_ok=True)
+# check if artist was found
+if result:
+    artist_id = result["id"]
+    songs = get_songs_by_artist(token, artist_id)
+    albums = get_albums_by_artist(token, artist_id)
+    # replace spaces with underscores
+    artist_folder = user_artist.replace(" ", "_")
+    # create folders for images
+    os.makedirs(f"images/{artist_folder}/songs/", exist_ok=True)
+    os.makedirs(f"images/{artist_folder}/albums/", exist_ok=True)
+    # enumerate through top 10 songs and print names
+    print("Top 10 songs:")
+    for i, song in enumerate(songs):
+        print(f"{i+1}. {song['name']}")
+        # retrieve the image URL of the song
+        image_url = song['album']['images'][0]['url']
+        # generate a filename for the image
+        filename = sanitize_filename(f"{song['name']}.png")
+        # set the filepath
+        filepath = os.path.join("images", artist_folder, "songs", filename)
+        # save the image
+        urllib.request.urlretrieve(image_url, filepath)
 
-# enumerate through top 10 songs and print names
-print("Top 10 songs:")
-for i, song in enumerate(songs):
-    print(f"{i+1}. {song['name']}")
-    # retrieve the image URL of the song
-    image_url = song['album']['images'][0]['url']
-    # generate a filename for the image
-    filename = f"{song['name']}.png"
-    # set the filepath
-    filepath = os.path.join("images", "songs", filename)
-    # save the image
-    urllib.request.urlretrieve(image_url, filepath)
+    # add a break between songs and albums
+    print("\n" + "-"*20 + "\n")
 
-# add a break between songs and albums
-print("\n" + "-"*20 + "\n")
-
-# enumerate through top 10 albums and print names
-print("Top 10 albums:")
-for x, album in enumerate(albums[:10]):
-    print(f"{x+1}. {album['name']}")
-    # retrieve the image URL of the album
-    image_url = album['images'][0]['url']
-    # generate a filename for the image
-    filename = f"{album['name']}.png"
-    # set the filepath
-    filepath = os.path.join("images", "albums", filename)
-    # save the image
-    urllib.request.urlretrieve(image_url, filepath)
+    # enumerate through top 10 albums and print names
+    print("Top 10 albums:")
+    for x, album in enumerate(albums[:10]):
+        print(f"{x+1}. {album['name']}")
+        # retrieve the image URL of the album
+        image_url = album['images'][0]['url']
+        # generate a filename for the image
+        filename = sanitize_filename(f"{album['name']}.png")
+        # set the filepath
+        filepath = os.path.join("images", artist_folder, "albums", filename)
+        # save the image
+        urllib.request.urlretrieve(image_url, filepath)
+else:
+    print("Artist not found.")
