@@ -1,0 +1,6 @@
+{
+    "error": {
+        "status": 404,
+        "message": "Non existing id: 'spotify:track:4NC0LlM8LuF9ol77V63QtJ'"
+    }
+}
