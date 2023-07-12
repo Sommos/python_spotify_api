@@ -72,11 +72,36 @@ def get_songs_by_artist(token, artist_id):
     else: 
         return json_result
 
+def get_albums_by_artist(token, artist_id):
+    # setup URL and headers for GET request
+    url = f"https://api.spotify.com/v1/artists/{artist_id}/albums?country=US" 
+    headers = get_auth_header(token)
+    # send GET request
+    result = get(url, headers=headers)
+    #  convert json to python dictionary
+    json_result = json.loads(result.content)["items"]
+    # check if albums was found
+    if len(json_result) == 0:
+        print("No albums found")
+        return None
+    else: 
+        return json_result
+
 token = get_token()
 result = search_for_artist(token, "Polyphia")
 artist_id = result["id"]
 songs = get_songs_by_artist(token, artist_id)
+albums = get_albums_by_artist(token, artist_id)
 
+print("Top 10 Songs:")
 # enumerate through top 10 songs and print names
 for i, song in enumerate(songs):
     print(f"{i+1}. {song['name']}")
+
+# print line break
+print("\n" + "-" * 30 + "\n")
+
+print("Top 10 Albums:")
+# enumerate through top 10 albums and print names
+for x, album in enumerate(albums[:10]):
+    print(f"{x+1}. {album['name']}")
