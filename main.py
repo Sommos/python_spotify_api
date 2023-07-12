@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from requests import post, get
 import base64
+import urllib
 import json
 import os
 
@@ -93,15 +94,34 @@ artist_id = result["id"]
 songs = get_songs_by_artist(token, artist_id)
 albums = get_albums_by_artist(token, artist_id)
 
-print("Top 10 Songs:")
+os.makedirs("images/songs/", exist_ok=True)
+os.makedirs("images/albums/", exist_ok=True)
+
 # enumerate through top 10 songs and print names
+print("Top 10 songs:")
 for i, song in enumerate(songs):
     print(f"{i+1}. {song['name']}")
+    # retrieve the image URL of the song
+    image_url = song['album']['images'][0]['url']
+    # generate a filename for the image
+    filename = f"{song['name']}.png"
+    # set the filepath
+    filepath = os.path.join("images", "songs", filename)
+    # save the image
+    urllib.request.urlretrieve(image_url, filepath)
 
-# print line break
-print("\n" + "-" * 30 + "\n")
+# add a break between songs and albums
+print("\n" + "-"*20 + "\n")
 
-print("Top 10 Albums:")
 # enumerate through top 10 albums and print names
+print("Top 10 albums:")
 for x, album in enumerate(albums[:10]):
     print(f"{x+1}. {album['name']}")
+    # retrieve the image URL of the album
+    image_url = album['images'][0]['url']
+    # generate a filename for the image
+    filename = f"{album['name']}.png"
+    # set the filepath
+    filepath = os.path.join("images", "albums", filename)
+    # save the image
+    urllib.request.urlretrieve(image_url, filepath)
