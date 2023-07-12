@@ -1,5 +1,9 @@
 # Python Spotify API
 
+<p align="center">
+    <img src="image0.png" width="400">
+</p>
+
 This program is to test the Spotify API, and retrieval of data from it.
 
 # Contribution 
